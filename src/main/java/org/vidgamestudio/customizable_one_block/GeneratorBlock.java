@@ -6,6 +6,8 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityTicker;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
@@ -50,5 +52,12 @@ public class GeneratorBlock extends BaseEntityBlock {
                 level.setBlockAndUpdate(targetPos, net.minecraft.world.level.block.Blocks.WHITE_WOOL.defaultBlockState());
             }
         }
+    }
+
+    @javax.annotation.Nullable
+    @Override
+    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
+        // Запускаем тикер только на сервере и только для нашего GeneratorBlockEntity
+        return level.isClientSide ? null : BaseEntityBlock.createTickerHelper(type, Customizable_one_block.GENERATOR_BE.get(), GeneratorBlockEntity::tick);
     }
 }

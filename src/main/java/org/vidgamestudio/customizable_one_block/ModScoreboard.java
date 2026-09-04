@@ -20,7 +20,6 @@ public class ModScoreboard {
             Scoreboard scoreboard = player.getServer().getScoreboard();
             Objective objective = scoreboard.getObjective(OBJECTIVE_NAME);
 
-            // Использовать DUMMY — безопасно, он никогда не будет гореть красным
             if (objective == null) {
                 objective = scoreboard.addObjective(
                         OBJECTIVE_NAME,
@@ -33,11 +32,18 @@ public class ModScoreboard {
         }
     }
 
-    public static void updatePlayerScore(ServerPlayer player, int totalBroken) {
+    public static void updatePlayerScore(ServerPlayer player, int total) {
         Scoreboard scoreboard = player.getServer().getScoreboard();
         Objective objective = scoreboard.getObjective(OBJECTIVE_NAME);
         if (objective != null) {
-            scoreboard.getOrCreatePlayerScore(player.getScoreboardName(), objective).setScore(totalBroken);
+            scoreboard.getOrCreatePlayerScore(player.getScoreboardName(), objective).setScore(total);
+        }
+    }
+    public static void incrementPlayerScore(ServerPlayer player){
+        Scoreboard scoreboard = player.getServer().getScoreboard();
+        Objective objective = scoreboard.getObjective(OBJECTIVE_NAME);
+        if (objective != null) {
+            scoreboard.getOrCreatePlayerScore(player.getScoreboardName(), objective).add(1);
         }
     }
 }
