@@ -20,17 +20,14 @@ public class GeneratorBlock extends BaseEntityBlock {
         super(properties);
     }
 
-    // 1. Изменяем физическую коллизию (по чему ходят)
     @Override
     public VoxelShape getCollisionShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
         return TALL_COLLISION_SHAPE;
     }
 
-    // 2. Оставляем хитбокс выбора (черная рамка при наведении) стандартным (1 блок)
-    // Это нужно, чтобы игрок мог целиться и бить по верхнему блоку (руде/дереву) отдельно!
     @Override
     public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-        return Shapes.block(); // Обычный куб 1х1х1
+        return Shapes.block();
     }
 
     @Override

@@ -35,22 +35,19 @@ public class BlockBreakHandler {
 
         if (level.getBlockState(generatorPos).is(Customizable_one_block.GENERATOR_BLOCK.get())) {
             if (level.getBlockEntity(generatorPos) instanceof GeneratorBlockEntity generatorBE) {
-                // 1. Отменяем ивент для безопасности от падений
                 event.setCanceled(true);
 
                 BlockState currentState = level.getBlockState(brokenPos);
                 net.minecraft.world.entity.player.Player player = event.getPlayer();
                 ItemStack mainHandItem = player.getMainHandItem();
 
-                // ЗАЩИТА ОТ БУРОВ (CREATE): Если ломает механизм, пропускаем урон инструменту
                 boolean isFake = player instanceof FakePlayer;
 
                 if (!isFake && !player.isCreative() && !mainHandItem.isEmpty() && mainHandItem.isDamageableItem()) {
                     mainHandItem.hurtAndBreak(1, player, (p) -> p.broadcastBreakEvent(net.minecraft.world.InteractionHand.MAIN_HAND));
                 }
 
-                // Очистка сундука при ломании
-                if (level.getBlockEntity(brokenPos) instanceof ChestBlockEntity chest) {
+                if (level.getBlockEntity(brokenPos) instanceof ChestBlockEntity chest) { // Дроп сундука
                     for (int i = 0; i < chest.getContainerSize(); i++) {
                         ItemStack stack = chest.getItem(i);
                         if (!stack.isEmpty()) spawnItemStrictlyAbove(level, brokenPos, stack.copy());
@@ -58,19 +55,16 @@ public class BlockBreakHandler {
                     chest.clearContent();
                 }
 
-                // ПОЛНОЦЕННЫЙ РАСЧЕТ ДОБЫЧИ (Инструменты + Шелк + Удача)
-                if (isFake || !player.isCreative()) {
+                if (isFake || !player.isCreative()) { // зачарования
                     boolean canHarvest = !currentState.requiresCorrectToolForDrops() || mainHandItem.isCorrectToolForDrops(currentState);
 
                     if (canHarvest) {
-                        // Ванильный встроенный калькулятор лута (он САМ учитывает Silk Touch и Fortune из коробки!)
                         var lootParams = new net.minecraft.world.level.storage.loot.LootParams.Builder((ServerLevel) level)
                                 .withParameter(net.minecraft.world.level.storage.loot.parameters.LootContextParams.ORIGIN, net.minecraft.world.phys.Vec3.atCenterOf(brokenPos))
                                 .withParameter(net.minecraft.world.level.storage.loot.parameters.LootContextParams.TOOL, mainHandItem)
                                 .withOptionalParameter(net.minecraft.world.level.storage.loot.parameters.LootContextParams.THIS_ENTITY, player);
 
                         for (ItemStack drop : currentState.getDrops(lootParams)) {
-                            // Дополнительный множитель для руды, если кастомные моды ломают калькулятор Удачи
                             int fortuneLvl = EnchantmentHelper.getItemEnchantmentLevel(Enchantments.BLOCK_FORTUNE, mainHandItem);
                             if (fortuneLvl > 0 && currentState.requiresCorrectToolForDrops() && !EnchantmentHelper.hasSilkTouch(mainHandItem)) {
                                 int multiplier = random.nextInt(fortuneLvl + 1) + 1;
@@ -81,11 +75,9 @@ public class BlockBreakHandler {
                     }
                 }
 
-                // ОБНОВЛЕНИЕ СЧЕТЧИКА ТАБА (Только для НАСТОЯЩИХ игроков, буры Create игнорируются)
-                if (!isFake && player instanceof ServerPlayer serverPlayer) {
+                if (!isFake && player instanceof ServerPlayer serverPlayer) { // Таб
                     generatorBE.incrementBlocks(serverPlayer);
                 } else {
-                    // Если это бур, просто тикаем внутренний счетчик в BE без обновления Scoreboard
                     generatorBE.incrementBlocksInternal();
                 }
 
@@ -95,8 +87,8 @@ public class BlockBreakHandler {
                     generatorBE.setActiveCategory("minecraft");
                 }
                 int score = generatorBE.getBlocksBroken(categoryName);
-                // 2. Ищем подходящую фазу в конфиге по количеству блоков
-                ModConfig.Category configCat = ModConfig.INSTANCE.categories.get(categoryName);
+
+                ModConfig.Category configCat = ModConfig.INSTANCE.categories.get(categoryName); // Выбор фазы
                 ModConfig.Phase activePhase = null;
                 if (configCat != null && configCat.phases != null) {
                     for (ModConfig.Phase p : configCat.phases) {
@@ -113,16 +105,13 @@ public class BlockBreakHandler {
                     return;
                 }
 
-                // 3. СИСТЕМА ВЕСОВ: Выбираем следующий блок из конфига
-                String selectedBlockId = getRandomWeightedItem(activePhase.blocks);
+                String selectedBlockId = getRandomWeightedItem(activePhase.blocks); // Систама весов
                 Block block = ForgeRegistries.BLOCKS.getValue(ResourceLocation.tryParse(selectedBlockId));
                 BlockState nextState = (block != null && block != Blocks.AIR) ? block.defaultBlockState() : Blocks.STONE.defaultBlockState();
 
-                // Ставим новый блок МГНОВЕННО (никаких задержек и падений игроков вниз!)
                 level.setBlock(brokenPos, nextState, 3);
 
-                // 4. СПАВН МОБОВ ИЗ КОНФИГА (с шансом 8% и на безопасной высоте Y + 1.2)
-                if (activePhase.monsters != null && !activePhase.monsters.isEmpty() && random.nextInt(100) < 8) {
+                if (activePhase.monsters != null && !activePhase.monsters.isEmpty() && random.nextInt(100) < 8) { // Спавн мобов
                     String selectedMobId = getRandomWeightedItem(activePhase.monsters);
                     var entityType = ForgeRegistries.ENTITY_TYPES.getValue(ResourceLocation.tryParse(selectedMobId));
                     if (entityType != null) {
@@ -133,8 +122,8 @@ public class BlockBreakHandler {
                         }
                     }
                 }
-                // 5. НАПОЛНЕНИЕ СУНДУКА (Если заспавнился именно блок сундука)
-                if (nextState.is(Blocks.CHEST)) {
+
+                if (nextState.is(Blocks.CHEST)) { // Напонение сундука
                     if (level.getBlockEntity(brokenPos) instanceof ChestBlockEntity chestEntity) {
                         if (activePhase.loot_chest != null) {
                             for (String lootEntry : activePhase.loot_chest) {
@@ -167,7 +156,6 @@ public class BlockBreakHandler {
             }
         }
     }
-    // Вспомогательный метод для точечного спавна лута строго по центру без разлета по сторонам
     private void spawnItemStrictlyAbove(Level level, BlockPos pos, ItemStack stack) {
         if (stack.isEmpty()) return;
         ItemEntity entity = new ItemEntity(level, pos.getX() + 0.5, pos.getY() + 1.1, pos.getZ() + 0.5, stack);
@@ -175,7 +163,6 @@ public class BlockBreakHandler {
         level.addFreshEntity(entity);
     }
 
-    // Алгоритм расчета случайного элемента на основе весов
     private String getRandomWeightedItem(List<String> entries) {
         int totalWeight = 0;
         List<String> items = new ArrayList<>();

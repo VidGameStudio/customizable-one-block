@@ -36,10 +36,8 @@ public class GeneratorBlockEntity extends BlockEntity {
         blocksBrokenMap.putInt(activeCategory, nextValue);
         setChanged();
 
-        // 1. Обновляем счетчик ломания в Табе у игрока
         ModScoreboard.updatePlayerScore(player, nextValue);
 
-        // 2. Проверяем, наступила ли новая фаза
         if (checkIfPhaseJustChanged(nextValue)) {
             notifyNearbyPlayers();
         }
@@ -78,7 +76,6 @@ public class GeneratorBlockEntity extends BlockEntity {
         for (Player p : players) {
             p.sendSystemMessage(Component.literal("§6[OneBlock] Блок перешел на новую стадию: §e" + activeCategory + "§6!"));
 
-            // Проигрываем красивый звук перехода для атмосферы
             level.playSound(null, p.getX(), p.getY(), p.getZ(),
                     net.minecraft.sounds.SoundEvents.UI_TOAST_CHALLENGE_COMPLETE,
                     net.minecraft.sounds.SoundSource.BLOCKS, 0.5f, 1.0f);

@@ -29,7 +29,6 @@ public class ModConfig {
         public int blocks_required;
         public List<String> blocks = new ArrayList<>();
         public List<String> loot_chest = new ArrayList<>();
-        // ДОБАВЛЯЕМ СПИСОК МОБОВ:
         public List<String> monsters = new ArrayList<>();
     }
 
@@ -42,8 +41,7 @@ public class ModConfig {
                 configFile.createNewFile();
                 ConfigData defaultData = new ConfigData();
 
-                // Дефолтный Майнкрафт с новыми шансами
-                Category mcCat = new Category();
+                Category mcCat = new Category(); // Default config
                 mcCat.color = "#FFFFFF";
 
                 Phase phase0 = new Phase();
@@ -51,9 +49,11 @@ public class ModConfig {
                 phase0.blocks.add("minecraft:stone:50");
                 phase0.blocks.add("minecraft:dirt:20");
                 phase0.blocks.add("minecraft:oak_log:20");
-                phase0.blocks.add("minecraft:chest:5"); // Админ сам заносит сундук в пул блоков!
-                phase0.loot_chest.add("1;minecraft:apple;3:100"); // Мин 1, Макс 3, Шанс 100
+                phase0.blocks.add("minecraft:chest:5");
+                phase0.loot_chest.add("1;minecraft:apple;3:100");
                 phase0.loot_chest.add("1;minecraft:coal;5:50");
+                phase0.monsters.add("minecraft:zombie:20");
+                phase0.monsters.add("minecraft:skeleton:10");
                 mcCat.phases.add(phase0);
 
                 defaultData.categories.put("minecraft", mcCat);

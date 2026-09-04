@@ -2,6 +2,7 @@ package org.vidgamestudio.customizable_one_block;
 
 import com.mojang.logging.LogUtils;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -22,12 +23,10 @@ public class Customizable_one_block {
     public static final String MODID = "customizable_one_block";
     private static final Logger LOGGER = LogUtils.getLogger();
 
-    // 2. ПРОВЕРЬТЕ: Передается ли сюда именно наш MODID (маленькими буквами)?
     public static final DeferredRegister<Block> BLOCKS = DeferredRegister.create(ForgeRegistries.BLOCKS, MODID);
     public static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITIES = DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE, MODID);
     public static final DeferredRegister<net.minecraft.world.item.Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, MODID);
 
-    // Сам блок-генератор. Проверьте имя регистрации "generator_block"
     public static final RegistryObject<Block> GENERATOR_BLOCK = BLOCKS.register("generator_block",
             () -> new GeneratorBlock(BlockBehaviour.Properties.copy(Blocks.BARRIER).noOcclusion()));
 
@@ -47,7 +46,6 @@ public class Customizable_one_block {
         ModConfig.load();
         IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
 
-        // 3. САМОЕ ВАЖНОЕ: Без этих двух строчек блоки никогда не появятся в игре!
         BLOCKS.register(modEventBus);
         BLOCK_ENTITIES.register(modEventBus);
         ITEMS.register(modEventBus);
@@ -56,14 +54,12 @@ public class Customizable_one_block {
 
     }
 
-    // Добавьте этот метод внутрь главного класса Customizable_one_block.java
     @net.minecraftforge.fml.common.Mod.EventBusSubscriber(modid = Customizable_one_block.MODID, bus = net.minecraftforge.fml.common.Mod.EventBusSubscriber.Bus.MOD, value = net.minecraftforge.api.distmarker.Dist.CLIENT)
     public static class ClientEvents {
         @net.minecraftforge.eventbus.api.SubscribeEvent
         public static void onRegisterAdditionalModels(net.minecraftforge.client.event.ModelEvent.RegisterAdditional event) {
-            // Принудительно заставляем игру загрузить плоскую модель карточки в атлас моделей
             event.register(new net.minecraft.client.resources.model.ModelResourceLocation(
-                    new net.minecraft.resources.ResourceLocation(Customizable_one_block.MODID, "upgrade_card"), "inventory"));
+                    new ResourceLocation(Customizable_one_block.MODID, "upgrade_card"), "inventory"));
         }
     }
 
