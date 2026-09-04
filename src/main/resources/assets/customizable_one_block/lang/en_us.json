@@ -1,0 +1,5 @@
+{
+  "block.customizable_one_block.generator_block": "One Block Generator",
+  "item.customizable_one_block.mod_upgrade.titled": "Mod Upgrade: %s",
+  "item.customizable_one_block.mod_upgrade.empty": "Empty Mod Upgrade"
+}

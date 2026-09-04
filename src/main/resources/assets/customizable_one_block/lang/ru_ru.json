@@ -1,0 +1,5 @@
+{
+  "block.customizable_one_block.generator_block": "Генератор Одного Блока",
+  "item.customizable_one_block.mod_upgrade.titled": "Улучшение мода: %s",
+  "item.customizable_one_block.mod_upgrade.empty": "Пустое Улучшение Мода"
+}
